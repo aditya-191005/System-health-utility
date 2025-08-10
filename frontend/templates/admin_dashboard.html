@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>System Admin Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 fs-4 fw-bold">System Health Admin Dashboard</span>
+            <a href="/export/csv" class="btn btn-outline-light btn-sm">Export CSV</a>
+        </div>
+    </nav>
+
+    <div class="container mb-4">
+        <form method="get" action="/" class="mb-4 row g-3 align-items-end">
+        <div class="col-md-3 col-sm-6">
+            <label for="os" class="form-label fw-semibold">Filter by OS:</label>
+            <select id="os" name="os" class="form-select">
+            <option value="">-- Select OS --</option>
+            <option value="mac" {% if request.args.get('os') == 'mac' %}selected{% endif %}>Mac</option>
+            <option value="linux" {% if request.args.get('os') == 'linux' %}selected{% endif %}>Linux</option>
+            <option value="windows" {% if request.args.get('os') == 'windows' %}selected{% endif %}>Windows</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <label for="issue" class="form-label fw-semibold">Filter by Issue:</label>
+            <select id="issue" name="issue" class="form-select">
+            <option value="">-- Select Issue --</option>
+            <option value="disk_encryption" {% if request.args.get('issue') == 'disk_encryption' %}selected{% endif %}>Disk Encryption</option>
+            <option value="os_update" {% if request.args.get('issue') == 'os_update' %}selected{% endif %}>OS Update</option>
+            <option value="antivirus" {% if request.args.get('issue') == 'antivirus' %}selected{% endif %}>Antivirus</option>
+            <option value="sleep_timeout" {% if request.args.get('issue') == 'sleep_timeout' %}selected{% endif %}>Sleep Timeout &gt; 10 min</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 col-sm-6 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+            <a href="/" class="btn btn-secondary flex-grow-1">Clear</a>
+        </div>
+        </form>
+
+    </div>
+
+    <div class="container">
+        <h2 class="mb-4 text-center">All Machines</h2>
+        <div class="table-responsive shadow-sm rounded bg-white">
+            <table class="table table-bordered table-hover mb-0 align-middle text-center">
+                <thead class="table-light">
+                    <tr>
+                        <th>Machine ID</th>
+                        <th>OS</th>
+                        <th>Disk Encrypted</th>
+                        <th>OS Up-to-date</th>
+                        <th>Antivirus</th>
+                        <th>Sleep Timeout</th>
+                        <th>Last Check-in</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for machine in machines %}
+                    <tr class="{% if not machine.disk_encrypted or not machine.os_up_to_date or not machine.antivirus_present or machine.sleep_timeout > 10 %}table-danger{% endif %}">
+                        <td>{{ machine.machine_id }}</td>
+                        <td>{{ machine.os_name }}</td>
+                        <td>{{ "Yes" if machine.disk_encrypted else "No" }}</td>
+                        <td>{{ "Yes" if machine.os_up_to_date else "No" }}</td>
+                        <td>{{ "Yes" if machine.antivirus_present else "No" }}</td>
+                        <td>{{ machine.sleep_timeout }} min</td>
+                        <td>{{ machine.last_updated.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-muted">No machines found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
